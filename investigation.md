@@ -260,4 +260,132 @@ This activity is consistent with normal employee onboarding rather than interact
 
 
 
+## 6. HR Onboarding Confirmation
+
+**Objective:** Verify whether the email was part of an approved employee onboarding process and obtain confirmation from the responsible department.
+
+**Executed SPL:**
+
+```spl
+index=main source="onboarding_email_logs.csv"
+(event_type="hr_onboarding_record" OR event_type="hr_confirmation")
+| table timestamp event_type message_id alert_id recipient sender validation_source validation_status department template_id onboarding_case action result details
+| sort 0 timestamp
+```
+
+**Evidence — Part 1:**
+
+![HR Onboarding Confirmation — Part 1](screenshots/06-hr-onboarding-confirmation-1.png)
+
+**Evidence — Part 2:**
+
+![HR Onboarding Confirmation — Part 2](screenshots/06-hr-onboarding-confirmation-2.png)
+
+**Results:**
+
+The search returned two events associated with the same onboarding process.
+
+| Field | HR onboarding record | HR confirmation |
+|---|---|---|
+| Timestamp | 2026-11-06 08:55:00 | 2026-11-06 09:18:00 |
+| Event type | `hr_onboarding_record` | `hr_confirmation` |
+| Recipient | `alex.morgan@company.example` | `alex.morgan@company.example` |
+| Message-ID | `<20261106090002.4815@company.example>` | `<20261106090002.4815@company.example>` |
+| Alert ID | — | `MAIL-ALERT-2041` |
+| Department | People Operations | People Operations |
+| Validation status | `approved_scheduled_onboarding` | `confirmed_legitimate` |
+| Template ID | `WELCOME-NEW-HIRE-02` | `WELCOME-NEW-HIRE-02` |
+| Onboarding case | `ONB-2026-118` | `ONB-2026-118` |
+
+**Additional observations:**
+
+The onboarding record was successfully created using the action `create_onboarding_record`.
+
+The HR confirmation referenced the People Operations ticket `ONB-2026-118` and recorded the action `confirm_email_legitimacy`.
+
+The final result was `confirmed`.
+
+**Analysis:**
+
+The HR onboarding record confirms that the recipient was associated with an approved and scheduled onboarding process before the email was sent.
+
+The subsequent HR confirmation explicitly verified the legitimacy of the email associated with alert `MAIL-ALERT-2041`.
+
+Both events reference the same recipient, Message-ID, template and onboarding case.
+
+This provides independent confirmation from the responsible department that the message was part of a legitimate business process.
+
+**Assessment:** The email was confirmed as legitimate by People Operations. No evidence of phishing or malicious intent was identified in the supplied dataset.
+
+
+
+## 7. Final Investigation Conclusion
+
+**Final classification: FALSE POSITIVE**
+
+The investigation determined that the email security alert was generated because the onboarding URL had not previously been observed for the recipient.
+
+The investigation identified multiple independent indicators confirming that the email was legitimate:
+
+1. **Email authentication:** SPF, DKIM and DMARC checks all passed.
+2. **Sender validation:** `people-ops@company.example` was confirmed as an active internal account assigned to the People Operations department.
+3. **URL validation:** The destination was registered in the corporate application inventory as an internal application managed by IT Applications.
+4. **Recipient activity:** The recipient accessed the onboarding portal from a known corporate device and internal IP address.
+5. **HR confirmation:** People Operations confirmed that the message was part of an approved onboarding process associated with case `ONB-2026-118`.
+
+The security alert was triggered by the `URL_FIRST_SEEN_FOR_RECIPIENT` detection rule because the URL was new for this particular recipient.
+
+No evidence of malicious intent or phishing activity was identified in the supplied dataset.
+
+**Final assessment:** The email was legitimate. The medium-risk alert was a false positive from the perspective of phishing detection.
+
+## 8. Recommended SOC Actions
+
+As a SOC L1 analyst, the recommended actions are:
+
+1. **Close the alert** `MAIL-ALERT-2041` as False Positive.
+2. **Document the investigation** and preserve the supporting evidence.
+3. **Record the reason for closure:** The URL was a registered internal application and the email was confirmed by People Operations.
+4. **Consider detection rule tuning:** The security team may review whether approved internal onboarding URLs should be handled differently by the first-seen URL detection rule. Any changes should follow the organization's approval process.
+5. **Retain monitoring:** Continue monitoring similar alerts to identify possible abuse of legitimate internal services.
+
+## 9. Investigation Limitations
+
+The investigation is based on a synthetic dataset containing eight events.
+
+The available records provide evidence of:
+- Email delivery and security alert generation.
+- Email authentication results.
+- Internal sender validation.
+- URL reputation and corporate application registration.
+- Recipient interaction with the onboarding portal.
+- HR onboarding approval and confirmation.
+
+The investigation does not include:
+- Full email headers.
+- External threat intelligence reputation data.
+- Endpoint telemetry.
+- A complete browser session or network traffic capture.
+- Evidence from a live production environment.
+
+The conclusion is therefore limited to the evidence available in the supplied dataset.
+
+## 10. Project Summary
+
+This project demonstrates a basic SOC L1 email security investigation workflow using Splunk and SPL.
+
+The investigation included:
+
+- Reviewing email security events.
+- Examining the reason behind an automated security alert.
+- Verifying the sender's identity.
+- Investigating URL reputation and internal application registration.
+- Reviewing recipient activity.
+- Correlating evidence with an approved HR onboarding process.
+- Determining whether the alert represented a genuine threat or a false positive.
+
+The investigation concluded that the alert was a **False Positive**, triggered by a legitimate onboarding URL that was new for the recipient.
+
+This project demonstrates the importance of validating alerts using multiple sources of evidence rather than relying solely on automated risk classifications.
+
 
