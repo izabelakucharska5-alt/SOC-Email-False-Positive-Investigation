@@ -167,3 +167,46 @@ This provides independent evidence supporting the legitimacy of the sender's ide
 Combined with the successful SPF, DKIM and DMARC checks, this reduces the likelihood that the message originated from an external impersonator.
 
 **Assessment:** Sender identity successfully validated. Further investigation is required to confirm the legitimacy of the URL and the onboarding process.
+
+
+
+## 4. URL Reputation and Internal Application Validation
+
+**Objective:** Verify whether the URL contained in the suspicious email belongs to a legitimate corporate application.
+
+**Executed SPL:**
+
+```spl
+index=main source="onboarding_email_logs.csv" event_type="url_analysis"
+| table timestamp url url_domain validation_source validation_status department result details
+| sort 0 timestamp
+```
+
+![URL Analysis — Splunk search and results](screenshots/04-url-analysis.png)
+
+**Results:**
+
+The search returned one URL analysis event.
+
+| Field | Value |
+|---|---|
+| URL | `https://newstarter.company.example/welcome/checklist` |
+| Domain | `newstarter.company.example` |
+| Validation source | Internal application inventory |
+| Validation status | `registered_internal_application` |
+| Department | IT Applications |
+| Result | `benign` |
+
+**Event details:**
+
+URL hostname is registered in the corporate application inventory and points to the internal New Starter Portal. TLS certificate is valid.
+
+**Analysis:**
+
+The URL was successfully matched against the organization's internal application inventory.
+
+The destination was identified as the legitimate New Starter Portal managed within the corporate environment. The TLS certificate was also reported as valid.
+
+This provides strong evidence that the URL is a legitimate internal resource rather than a suspicious external destination.
+
+**Assessment:** URL verified as a registered internal application. This significantly reduces the likelihood of phishing.
