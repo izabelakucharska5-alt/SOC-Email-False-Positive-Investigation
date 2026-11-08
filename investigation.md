@@ -5,20 +5,42 @@
 **Dataset:** [`data/onboarding_email_logs.csv`](data/onboarding_email_logs.csv)  
 **Environment:** Splunk Enterprise
 
-## 1. Investigation Objective
 
-Investigate a medium-risk email security alert triggered by a welcome email sent to a new employee. Determine whether the message represents a phishing attempt or a legitimate onboarding communication.
+## 1. Initial Event Overview
 
-## 2. Scenario
+**Objective:** Review the available security events and establish the scope of the email security investigation.
 
-A welcome email containing an onboarding checklist link was delivered to a new employee. The email security system generated a medium-risk alert because the URL had not previously been observed for that recipient. The investigation will review sender identity, email authentication, URL ownership, onboarding workflow records and related user activity.
+**Executed SPL:**
 
-## 3. Investigation Log
+```spl
+index=main source="onboarding_email_logs.csv"
+| stats count by event_type
+| sort - count
+```
 
-> Add each search as it is executed. Place the exact SPL command first, the corresponding screenshot immediately after it, followed by the observed results and analysis.
+![Initial Event Overview — Splunk search and results](screenshots/01-event-overview.png)
 
-<!-- Investigation steps will be added here one at a time. -->
+**Results:**
 
-## 4. Final Assessment
+The search returned 8 events, with one event recorded for each of the following event types:
 
-_To be completed after the Splunk investigation._
+| Event type | Count |
+|---|---:|
+| email_received | 1 |
+| email_security_alert | 1 |
+| hr_confirmation | 1 |
+| hr_onboarding_record | 1 |
+| portal_access | 1 |
+| sender_validation | 1 |
+| url_analysis | 1 |
+| url_click | 1 |
+
+**Analysis:**
+
+The dataset contains a complete sequence of events related to one email security alert.
+
+The message was received, an automated security alert was generated, and further events were recorded for sender validation, URL analysis, recipient interaction and HR confirmation.
+
+These events provide several investigation paths that can help determine whether the alert represents a genuine phishing threat or a legitimate business communication.
+
+**Preliminary assessment:** Further investigation required. No final classification has been made.
