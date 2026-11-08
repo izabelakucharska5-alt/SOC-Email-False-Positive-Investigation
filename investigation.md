@@ -210,3 +210,54 @@ The destination was identified as the legitimate New Starter Portal managed with
 This provides strong evidence that the URL is a legitimate internal resource rather than a suspicious external destination.
 
 **Assessment:** URL verified as a registered internal application. This significantly reduces the likelihood of phishing.
+
+
+
+## 5. Recipient Activity and Internal Portal Access
+
+**Objective:** Verify whether the recipient interacted with the URL and accessed the expected internal onboarding portal from a known corporate device.
+
+**Executed SPL:**
+
+```spl
+index=main source="onboarding_email_logs.csv"
+(event_type="url_click" OR event_type="portal_access")
+| table timestamp event_type recipient src_ip src_location device_id url url_domain resource action result details
+| sort 0 timestamp
+```
+
+![Recipient Portal Access — Splunk search and results](screenshots/05-recipient-portal-access.png)
+
+**Results:**
+
+The search returned two events associated with the same recipient.
+
+| Field | URL click | Portal access |
+|---|---|---|
+| Timestamp | 09:12:11 | 09:12:14 |
+| Recipient | `alex.morgan@company.example` | `alex.morgan@company.example` |
+| Source IP | `10.10.20.44` | `10.10.20.44` |
+| Location | Warsaw, Poland | Warsaw, Poland |
+| Device | `ALEX-LAPTOP-01` | `ALEX-LAPTOP-01` |
+| URL domain | `newstarter.company.example` | `newstarter.company.example` |
+| Result | success | success |
+
+**Additional observations:**
+- The URL click was recorded as `clicked_link`.
+- The portal access was recorded as `open_onboarding_portal`.
+- The resource was identified as `New Starter Checklist`.
+- The details confirm authenticated access to the internal New Starter Portal using the employee account and known corporate device.
+
+**Analysis:**
+
+The recipient clicked the onboarding link and accessed the corresponding internal portal three seconds later.
+
+Both events originated from the same IP address, location and known corporate device. The destination matches the previously verified internal application.
+
+This activity is consistent with normal employee onboarding rather than interaction with a malicious external website.
+
+**Assessment:** Recipient activity supports the legitimacy of the email. Further confirmation of the onboarding process is required before closing the security alert.
+
+
+
+
