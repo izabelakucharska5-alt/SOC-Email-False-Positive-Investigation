@@ -125,3 +125,45 @@ However, these indicators alone are not sufficient to establish that the message
 The email was delivered with an alert rather than blocked or quarantined.
 
 **Preliminary assessment:** Potential false positive. Further investigation is required to independently verify the sender, URL and HR onboarding activity before closing the alert.
+
+
+
+## 3. Sender Validation
+
+**Objective:** Verify whether the sender belongs to an active internal company account.
+
+**Executed SPL:**
+
+```spl
+index=main source="onboarding_email_logs.csv" event_type="sender_validation"
+| table timestamp sender sender_domain validation_status validation_method directory_match result details
+```
+
+![Sender Validation — Splunk search and results](screenshots/03-sender-validation.png)
+
+**Results:**
+
+The search returned one sender validation event.
+
+| Field | Value |
+|---|---|
+| Timestamp | 2026-11-06 09:03:15 +01:00 |
+| Sender | `people-ops@company.example` |
+| Sender domain | `company.example` |
+| Validation status | `active_internal_account` |
+| Result | `success` |
+| Department | People Operations |
+
+**Event details:**
+
+Sender address belongs to an active internal account assigned to the People Operations department.
+
+**Analysis:**
+
+The sender validation event confirms that the email address belongs to an active internal company account associated with the People Operations department.
+
+This provides independent evidence supporting the legitimacy of the sender's identity.
+
+Combined with the successful SPF, DKIM and DMARC checks, this reduces the likelihood that the message originated from an external impersonator.
+
+**Assessment:** Sender identity successfully validated. Further investigation is required to confirm the legitimacy of the URL and the onboarding process.
